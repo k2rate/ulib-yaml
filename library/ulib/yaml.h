@@ -518,7 +518,7 @@ namespace ulib
                 result = -result;
 
             // integer
-            return result;
+            return (double)result;
         }
 
         static int64_t parse_integer(ulib::string_view str)
