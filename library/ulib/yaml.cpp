@@ -75,7 +75,8 @@ namespace ulib
     const yaml &yaml::find_if_exists(StringViewT name) const
     {
         if (mType != value_t::map)
-            throw exception{ulib::string{"in yaml find_if_exists(\""} + name + "\")" + " yaml must be a map"};
+            throw key_error{ulib::string{"[yaml.key_error] ulib::yaml.find_if_exists(\""} + name + "\")" +
+                            ": node must be a map"};
 
         implicit_const_touch_object();
 
@@ -83,18 +84,19 @@ namespace ulib
             if (obj.name() == name)
                 return obj.value();
 
-        throw exception{ulib::string{"in yaml find_if_exists(\""} + name + "\")" + " key not found"};
+        throw key_error{ulib::string{"[yaml.key_error] ulib::yaml.find_if_exists(\""} + name + "\")" +
+                        ": key not found"};
     }
 
     const yaml &yaml::find_if_exists(size_t idx) const
     {
         if (mType != value_t::sequence)
-            throw exception{ulib::string{"in yaml find_if_exists("} + std::to_string(idx) + ")" +
-                            " yaml must be a sequence"};
+            throw key_error{ulib::string{"[yaml.key_error] ulib::yaml.find_if_exists("} + std::to_string(idx) + ")" +
+                            ": node must be a sequence"};
 
         if (idx >= mSequence.size())
-            throw exception{ulib::string{"in yaml find_if_exists("} + std::to_string(idx) + ")" +
-                            " index out of range. Sequence size is " + std::to_string(mSequence.size())};
+            throw key_error{ulib::string{"[yaml.key_error] ulib::yaml.find_if_exists("} + std::to_string(idx) + ")" +
+                            ": index out of range, sequence size: " + std::to_string(mSequence.size())};
 
         return mSequence[idx];
     }

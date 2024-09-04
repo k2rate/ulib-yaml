@@ -14,6 +14,30 @@ namespace ulib
     public:
         ULIB_RUNTIME_ERROR(exception);
 
+        class internal_error : public exception
+        {
+        public:
+            using exception::exception;
+        };
+
+        class parse_error : public exception
+        {
+        public:
+            using exception::exception;
+        };
+
+        class key_error : public exception
+        {
+        public:
+            using exception::exception;
+        };
+
+        class value_error : public exception
+        {
+        public:
+            using exception::exception;
+        };
+
         template <class JsonTy>
         class basic_item : public JsonTy
         {
@@ -241,8 +265,9 @@ namespace ulib
             if (auto v = try_get<T>())
                 return v.value();
 
-            throw yaml::exception(ulib::string{"yaml invalid get() type. expected: scalar. current: "} +
-                                  type_to_string(mType));
+            throw yaml::value_error(ulib::string{"[yaml.value_error] ulib::yaml.get<T : floating_point>(): "
+                                                 "invalid get() type: expected number, current: "} +
+                                    type_to_string(mType));
         }
 
         template <class T, std::enable_if_t<std::is_same_v<T, bool>, bool> = true>
@@ -251,8 +276,9 @@ namespace ulib
             if (auto v = try_get<T>())
                 return v.value();
 
-            throw yaml::exception(ulib::string{"yaml invalid get() type. expected: boolean. current: "} +
-                                  type_to_string(mType));
+            throw yaml::value_error(ulib::string{"[yaml.value_error] ulib::yaml.get<T = bool>(): invalid get() "
+                                                 "type: expected boolean, current: "} +
+                                    type_to_string(mType));
         }
 
         template <class T, std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool>, bool> = true>
@@ -261,8 +287,9 @@ namespace ulib
             if (auto v = try_get<T>())
                 return v.value();
 
-            throw yaml::exception(ulib::string{"yaml invalid get() type. expected: integer or floating. current: "} +
-                                  type_to_string(mType));
+            throw yaml::value_error(ulib::string{"[yaml.value_error] ulib::yaml.get<T : integral>(): invalid "
+                                                 "get() type: expected number, current: "} +
+                                    type_to_string(mType));
         }
 
         template <class T, class VT = typename T::value_type, class TEncodingT = argument_encoding_or_die_t<T>,
@@ -272,8 +299,9 @@ namespace ulib
             if (auto v = try_get<T>())
                 return v.value();
 
-            throw yaml::exception(ulib::string{"yaml invalid get() type. expected: string. current: "} +
-                                  type_to_string(mType));
+            throw yaml::value_error(ulib::string{"[yaml.value_error] ulib::yaml.get<T : string>(): invalid get() "
+                                                 "type: expected string, current: "} +
+                                    type_to_string(mType));
         }
 
         template <
@@ -284,8 +312,9 @@ namespace ulib
             if (auto v = try_get<T>())
                 return v.value();
 
-            throw yaml::exception(ulib::string{"yaml invalid get() type. expected: string. current: "} +
-                                  type_to_string(mType));
+            throw yaml::value_error(ulib::string{"[yaml.value_error] ulib::yaml.get<T : encoded_string>(): "
+                                                 "invalid get() type: expected string, current: "} +
+                                    type_to_string(mType));
         }
 
         template <class T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
@@ -350,8 +379,8 @@ namespace ulib
         const yaml *search(StringViewT name) const
         {
             if (mType != value_t::map)
-                throw yaml::exception(ulib::string{"failed to search via key: \""} + name +
-                                      "\" yaml value must be a map. current: " + type_to_string(mType));
+                throw yaml::value_error(ulib::string{"[yaml.value_error] ulib::yaml.search(\""} + name +
+                                        "\"): node must be a map, but is " + type_to_string(mType));
 
             return find_object_in_object(name);
         }
@@ -359,8 +388,8 @@ namespace ulib
         yaml *search(StringViewT name)
         {
             if (mType != value_t::map)
-                throw yaml::exception(ulib::string{"failed to search via key: \""} + name +
-                                      "\" yaml value must be a map. current: " + type_to_string(mType));
+                throw yaml::value_error(ulib::string{"[yaml.value_error] ulib::yaml.search(\""} + name +
+                                        "\"): node must be a map, but is " + type_to_string(mType));
 
             return find_object_in_object(name);
         }
@@ -376,8 +405,8 @@ namespace ulib
             if (mType == value_t::scalar)
                 return mScalar;
 
-            throw yaml::exception(
-                ulib::string{"failed to retrieve scalar value yaml value must have the scalar type. current: "} +
+            throw yaml::value_error(
+                ulib::string{"[yaml.value_error] ulib::yaml.scalar(): node must be a scalar, but is "} +
                 type_to_string(mType));
         }
 
@@ -392,8 +421,8 @@ namespace ulib
         inline void remove(StringViewT key)
         {
             if (mType != value_t::map)
-                throw yaml::exception(ulib::string{"failed to remove key: \""} + key +
-                                      "\" yaml value must be an object. current: " + type_to_string(mType));
+                throw yaml::value_error(ulib::string{"[yaml.value_error] ulib::yaml.remove(\""} + key +
+                                        "\"): node must be a map, but is " + type_to_string(mType));
 
             for (auto it = mMap.begin(); it != mMap.end(); it++)
             {
@@ -468,10 +497,10 @@ namespace ulib
             {
                 it++;
                 if (it == end)
-                    throw yaml::exception{"end of file"};
+                    throw yaml::parse_error{"[yaml.parse_error] ulib::yaml::parse_float(): end of file"};
 
                 if (!(*it >= '0' && *it <= '9'))
-                    throw yaml::exception{"expected integer"};
+                    throw yaml::parse_error{"[yaml.parse_error] ulib::yaml::parse_float(): expected digits"};
             }
 
             int64_t result = *it - '0';
@@ -531,10 +560,10 @@ namespace ulib
             {
                 it++;
                 if (it == end)
-                    throw yaml::exception{"end of file"};
+                    throw yaml::parse_error{"[yaml.parse_error] ulib::yaml::parse_integer(): end of file"};
 
                 if (!(*it >= '0' && *it <= '9'))
-                    throw yaml::exception{"expected integer"};
+                    throw yaml::parse_error{"[yaml.parse_error] ulib::yaml::parse_integer(): expected digits"};
             }
 
             int64_t result = *it - '0';

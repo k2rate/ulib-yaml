@@ -77,7 +77,9 @@ namespace ulib
             if (t == yaml::value_t::sequence)
                 return yaml_serialize_sequence(yml, tabs);
 
-            throw yaml::exception{"Invalid yaml type was detected while yaml object serialization"};
+            throw yaml::internal_error{
+                "[yaml.internal_error] yaml_detail::yaml_serialize_value(): got invalid yaml type " +
+                std::to_string((int)t)};
         }
 
     } // namespace json_detail

@@ -4,7 +4,7 @@
 
 namespace ulib
 {
-    namespace detail
+    namespace yaml_detail
     {
         void convert_scalar(yaml &dest, const YAML::Node &node) { dest = yaml{node.Scalar()}; }
 
@@ -37,7 +37,7 @@ namespace ulib
                 convert_sequence(dest, node);
                 return;
             case YAML::NodeType::Scalar:
-                detail::convert_scalar(dest, node);
+                yaml_detail::convert_scalar(dest, node);
                 return;
             case YAML::NodeType::Null:
                 dest = yaml{};
@@ -46,7 +46,9 @@ namespace ulib
                 dest = yaml{};
                 return;
             default:
-                throw ulib::yaml::exception{"Invalid YAML NodeType"};
+                throw ulib::yaml::internal_error{
+                    "[yaml.internal_error] yaml_detail::convert_node(): invalid YAML NodeType" +
+                    std::to_string((int)node.Type())};
             }
         }
     } // namespace detail
@@ -60,7 +62,7 @@ namespace ulib
 
         YAML::Node node = YAML::Load(data);
         yaml value;
-        detail::convert_node(value, node);
+        yaml_detail::convert_node(value, node);
         return value;
     }
 } // namespace ulib
