@@ -75,7 +75,7 @@ namespace ulib
     const yaml &yaml::find_if_exists(StringViewT name) const
     {
         if (mType != value_t::map)
-            throw exception{ulib::string{"in yaml find_if_exists(\""} + name + "\")" + " yaml must be an object"};
+            throw exception{ulib::string{"in yaml find_if_exists(\""} + name + "\")" + " yaml must be a map"};
 
         implicit_const_touch_object();
 
@@ -90,12 +90,11 @@ namespace ulib
     {
         if (mType != value_t::sequence)
             throw exception{ulib::string{"in yaml find_if_exists("} + std::to_string(idx) + ")" +
-                            " yaml must be an array"};
+                            " yaml must be a sequence"};
 
         if (idx >= mSequence.size())
             throw exception{ulib::string{"in yaml find_if_exists("} + std::to_string(idx) + ")" +
-                            " index out of range. Array size is " + std::to_string(mSequence.size())};
-        // throw exception{"yaml array index out of range"};
+                            " index out of range. Sequence size is " + std::to_string(mSequence.size())};
 
         return mSequence[idx];
     }
@@ -140,7 +139,7 @@ namespace ulib
 
         if (mType != value_t::null)
             throw yaml::exception(
-                ulib::string{"yaml value must be an object or null while implicit touch. current: "} +
+                ulib::string{"yaml value must be a map or null while implicit touch. current: "} +
                 type_to_string(mType));
 
         return initialize_as_object(), true;
@@ -153,7 +152,7 @@ namespace ulib
 
         if (mType != value_t::null)
             throw yaml::exception(
-                ulib::string{"yaml value must be an array or null while implicit touch. current: "} +
+                ulib::string{"yaml value must be a sequence or null while implicit touch. current: "} +
                 type_to_string(mType));
 
         return initialize_as_array(), true;
@@ -169,14 +168,14 @@ namespace ulib
     void yaml::implicit_const_touch_object() const
     {
         if (mType != value_t::map)
-            throw yaml::exception(ulib::string{"yaml value must be an object while implicit const touch. current: "} +
+            throw yaml::exception(ulib::string{"yaml value must be a map while implicit const touch. current: "} +
                                   type_to_string(mType));
     }
 
     void yaml::implicit_const_touch_array() const
     {
         if (mType != value_t::sequence)
-            throw yaml::exception(ulib::string{"yaml value must be an array while implicit const touch. current: "} +
+            throw yaml::exception(ulib::string{"yaml value must be a sequence while implicit const touch. current: "} +
                                   type_to_string(mType));
     }
 
